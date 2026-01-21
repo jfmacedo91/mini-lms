@@ -1,0 +1,20 @@
+{
+  "name": "mini-framework",
+  "version": "1.0.0",
+  "description": "Mini framework desenvolvido durante o curso de Nodejs da Origamid",
+  "homepage": "https://github.com/jfmacedo91/mini-framework#readme",
+  "bugs": {
+    "url": "https://github.com/jfmacedo91/mini-framework/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jfmacedo91/mini-framework.git"
+  },
+  "license": "MIT",
+  "author": "Jean Fernandes de Macedo",
+  "type": "module",
+  "main": "index.ts",
+  "devDependencies": {
+    "@types/node": "^25.0.9"
+  }
+}
