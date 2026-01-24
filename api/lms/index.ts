@@ -21,12 +21,7 @@ export class LmsApi extends Api {
     },
     postLesson: (req, res) => {
       const { courseSlug, slug, title, seconds, video, description, order, free } = req.body;
-      const writeResult = this.db.query(/*sql*/`
-        INSERT OR IGNORE INTO "lessons"
-          ("course_id", "slug", "title", "seconds", "video", "description", "order", "free")
-        VALUES
-          ((SELECT "id" FROM "courses" WHERE "slug" = ?), ?, ?, ?, ?, ?, ?, ?);
-      `).run(courseSlug, slug, title, seconds, video, description, order, free);
+      const writeResult = this.query.insertLesson({ courseSlug, slug, title, seconds, video, description, order, free })
       if(writeResult.changes === 0) {
         throw new RouteError(400, "Erro ao criar aula!");
       }
