@@ -54,6 +54,23 @@ const functions = {
 		const response = await fetch(base + "/lms/lesson/html-e-css/links-e-imagens");
 		const body = await response.json();
 		console.log(body);
+	},
+	async postUser() {
+		const response = await fetch(base + "/auth/user", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				name: "Jean Fernandes de Macedo",
+				username: "jeanmacedo",
+				email: "jean@email.com",
+				role: "admin",
+				password: "123456"
+			})
+		});
+		const body = await response.json();
+		console.table(body);
 	}
 };
 
