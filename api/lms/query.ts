@@ -55,5 +55,24 @@ export class LmsQuery extends Query {
     return this.db.query(/*sql*/`
       SELECT * FROM "courses" WHERE "slug" = ?
     `).get(slug) as CourseType | undefined;
-  }
-}
+  };
+  selectLessons(courseSlug: string) {
+    return this.db.query(/*sql*/`
+      SELECT * FROM "lessons"
+      WHERE "course_id" = (SELECT "id" FROM "courses" WHERE "slug" = ?)
+      ORDER BY "order" ASC;
+    `).all(courseSlug) as LessonType[];
+  };
+  selectLesson(courseSlug: string, lessonSlug: string) {
+    return this.db.query(/*sql*/`
+      SELECT * FROM "lessons"
+      WHERE "course_id" = (SELECT "id" FROM "courses" WHERE "slug" = ?) AND "slug" = ?
+    `).get(courseSlug, lessonSlug) as LessonType | undefined;
+  };
+  selectLessonNav(courseSlug: string, lessonSlug: string) {
+    return this.db.query(/*sql*/`
+      SELECT "slug" FROM "lesson_nav"
+      WHERE "course_id" = (SELECT "id" FROM "courses" WHERE "slug" = ?) AND "current_slug" = ?
+    `).all(courseSlug, lessonSlug) as { slug: string}[];
+  };
+};

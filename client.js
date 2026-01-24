@@ -49,6 +49,11 @@ const functions = {
 		const response = await fetch(base + "/lms/course/html-e-css");
 		const body = await response.json();
 		console.log(body);
+	},
+	async getLesson() {
+		const response = await fetch(base + "/lms/lesson/html-e-css/links-e-imagens");
+		const body = await response.json();
+		console.log(body);
 	}
 };
 
