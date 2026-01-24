@@ -46,4 +46,14 @@ export class LmsQuery extends Query {
         ((SELECT "id" FROM "courses" WHERE "slug" = ?), ?, ?, ?, ?, ?, ?, ?);
     `).run(courseSlug, slug, title, seconds, video, description, order, free);
   };
+  selectCourses() {
+    return this.db.query(/*sql*/`
+      SELECT * FROM "courses" ORDER BY "created" ASC LIMIT 100;
+    `).all() as CourseType[];
+  };
+  selectCourse(slug: string) {
+    return this.db.query(/*sql*/`
+      SELECT * FROM "courses" WHERE "slug" = ?
+    `).get(slug) as CourseType | undefined;
+  }
 }
