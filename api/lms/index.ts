@@ -56,7 +56,14 @@ export class LmsApi extends Api {
       if(!course) {
         throw new RouteError(404, "Curso não encontrado!");
       }
-      res.status(200).json({ course, lessons });
+
+      let completed: { lesson_id: number, completed: string }[] = [];
+      const userId = 1;
+      if(userId) {
+        completed = this.query.selectLessonsCompleted(userId, course.id);
+      };
+
+      res.status(200).json({ course, lessons, completed });
     },
     getLesson: (req, res) => {
       const { courseSlug, lessonSlug } = req.params;
@@ -69,7 +76,24 @@ export class LmsApi extends Api {
       const prev = index === 0 ? null : nav.at(index - 1)?.slug;
       const next = nav.at(index + 1)?.slug ?? null;
 
-      res.status(200).json({ ...lesson, prev, next });
+      let completed = "";
+      const userId = 1;
+      if(userId) {
+        const lessonCompleted = this.query.selectLessonCompleted(userId, lesson.id);
+        if(lessonCompleted) completed = lessonCompleted.completed;
+      };
+
+      res.status(200).json({ ...lesson, prev, next, completed });
+    },
+    resetCourse: (req, res) => {
+      const userId = 1;
+      const { courseId } = req.body;
+      const writeResult = this.query.deleteLessonsCompleted(userId, courseId);
+      if(writeResult.changes === 0) {
+        throw new RouteError(400, "Erro ao resetar o curso!");
+      };
+
+      res.status(200).json({ ttile: "Curso resetado com sucesso!" });
     }
   } satisfies Api["handlers"];
   tables(): void {
@@ -83,5 +107,7 @@ export class LmsApi extends Api {
     this.router.get("/lms/courses", this.handlers.getCourses);
     this.router.get("/lms/course/:slug", this.handlers.getCourse);
     this.router.get("/lms/lesson/:courseSlug/:lessonSlug", this.handlers.getLesson);
+
+    this.router.delete("/lms/course/reset", this.handlers.resetCourse);
   }
 }
