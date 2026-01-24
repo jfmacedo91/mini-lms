@@ -32,6 +32,16 @@ export class LmsApi extends Api {
         title: "Aula criada com sucesso!"
       });
     },
+    postLessonCompleted: (req, res) => {
+      const userId = 1;
+      const { courseId, lessonId } = req.body;
+      const writeResult = this.query.insertLessonCompleted(userId, courseId, lessonId);
+      if(writeResult.changes === 0) {
+        throw new RouteError(400, "Erro ao completar aula!");
+      }
+
+      res.status(201).json({ title: "Aula concluída!" });
+    },
     getCourses: (req, res) => {
       const courses = this.query.selectCourses();
       if(courses.length === 0) {
@@ -68,10 +78,10 @@ export class LmsApi extends Api {
   routes(): void {
     this.router.post("/lms/course", this.handlers.postCourse);
     this.router.post("/lms/lesson", this.handlers.postLesson);
+    this.router.post("/lms/lesson/complete", this.handlers.postLessonCompleted);
 
     this.router.get("/lms/courses", this.handlers.getCourses);
     this.router.get("/lms/course/:slug", this.handlers.getCourse);
-
     this.router.get("/lms/lesson/:courseSlug/:lessonSlug", this.handlers.getLesson);
   }
 }
