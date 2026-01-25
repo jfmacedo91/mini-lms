@@ -35,18 +35,31 @@ export class LmsApi extends Api {
     postLessonCompleted: (req, res) => {
       const userId = 1;
       const { courseId, lessonId } = req.body;
+
       const writeResult = this.query.insertLessonCompleted(userId, courseId, lessonId);
       if(writeResult.changes === 0) {
         throw new RouteError(400, "Erro ao completar aula!");
-      }
+      };
 
-      res.status(201).json({ title: "Aula concluída!" });
+      const progress = this.query.selectProgress(userId, courseId);
+      const incompleteLessons = progress.filter((item) => !item.completed);
+      if(progress.length > 0 && incompleteLessons.length === 0) {
+        const certificate = this.query.insertCertificate(userId, courseId);
+        if(!certificate) {
+          throw new RouteError(400, "Erro gerar certificado!");
+        };
+
+        res.status(201).json({ certificate: certificate.id, title: "Aula concluída!" });
+        return;
+      };
+
+      res.status(201).json({ certificate: "", title: "Aula concluída!" });
     },
     getCourses: (req, res) => {
       const courses = this.query.selectCourses();
       if(courses.length === 0) {
         throw new RouteError(404, "Nenhum curso encontrado!");
-      }
+      };
       res.status(200).json(courses);
     },
     getCourse: (req, res) => {
@@ -94,6 +107,24 @@ export class LmsApi extends Api {
       };
 
       res.status(200).json({ ttile: "Curso resetado com sucesso!" });
+    },
+    getCertificates: (req, res) => {
+      const userId = 1;
+      const certificates = this.query.selectCertificates(userId);
+      if(certificates.length === 0) {
+        throw new RouteError(400, "Nenhum certificado encontrado!");
+      };
+
+      res.status(200).json(certificates);
+    },
+    getCertificate: (req, res) => {
+      const { certificateId } = req.params;
+      const certificate = this.query.selectCertificate(certificateId);
+      if(!certificate) {
+        throw new RouteError(400, "Certificado não encontrado!");
+      };
+
+      res.status(200).json(certificate);
     }
   } satisfies Api["handlers"];
   tables(): void {
@@ -107,6 +138,8 @@ export class LmsApi extends Api {
     this.router.get("/lms/courses", this.handlers.getCourses);
     this.router.get("/lms/course/:slug", this.handlers.getCourse);
     this.router.get("/lms/lesson/:courseSlug/:lessonSlug", this.handlers.getLesson);
+    this.router.get("/lms/certificates", this.handlers.getCertificates);
+    this.router.get("/lms/certificate/:certificateId", this.handlers.getCertificate);
 
     this.router.delete("/lms/course/reset", this.handlers.resetCourse);
   }

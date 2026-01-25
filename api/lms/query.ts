@@ -29,6 +29,15 @@ type LessonCreate = Omit<LessonType, "id" | "course_id" | "created"> & {
   courseSlug: string;
 };
 
+type CertificateFullType = {
+  id: string;
+  name: string;
+  title: string;
+  hours: number;
+  lessons: number;
+  completed: string;
+}
+
 export class LmsQuery extends Query {
   insertCourse({ slug, title, description, lessons, hours }: CourseCreate) {
     return this.db.query(/*sql*/`
@@ -100,5 +109,33 @@ export class LmsQuery extends Query {
       DELETE FROM "lessons_completed"
       WHERE "user_id" = ? AND "course_id" = ?
     `).run(userId, courseId);
+  };
+  selectProgress(userId: number, courseId: number) {
+    return this.db.query(/*sql*/`
+      SELECT "l"."id", "lc"."completed"
+      FROM "lessons" AS "l"
+      LEFT JOIN "lessons_completed" AS "lc"
+      ON "l"."id" = "lc"."lesson_id" AND "lc"."user_id" = ?
+      WHERE "l"."course_id" = ?;
+    `).all(userId, courseId) as { id: number, completed: string }[];
+  };
+  insertCertificate(userId: number, courseId: number) {
+    return this.db.query(/*sql*/`
+      INSERT OR IGNORE INTO "certificates"
+        ("user_id", "course_id")
+      VALUES
+        (?, ?)
+      RETURNING "id";
+    `).get(userId, courseId) as { id: string } | undefined;
+  };
+  selectCertificates(userId: number) {
+    return this.db.query(/*sql*/`
+      SELECT * FROM "certificates_full" WHERE "user_id" = ?
+    `).all(userId) as CertificateFullType[];
+  };
+  selectCertificate(certificateId: string) {
+    return this.db.query(/*sql*/`
+      SELECT * FROM "certificates_full" WHERE "id" = ?
+    `).get(certificateId) as CertificateFullType | undefined;
   };
 };
