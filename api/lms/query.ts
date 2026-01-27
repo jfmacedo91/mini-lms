@@ -56,30 +56,30 @@ export class LmsQuery extends Query {
     `).run(courseSlug, slug, title, seconds, video, description, order, free);
   };
   selectCourses() {
-    return this.db.query(/*sql*/`
+    return this.db.prepare(/*sql*/`
       SELECT * FROM "courses" ORDER BY "created" ASC LIMIT 100;
     `).all() as CourseType[];
   };
   selectCourse(slug: string) {
-    return this.db.query(/*sql*/`
+    return this.db.prepare(/*sql*/`
       SELECT * FROM "courses" WHERE "slug" = ?
     `).get(slug) as CourseType | undefined;
   };
   selectLessons(courseSlug: string) {
-    return this.db.query(/*sql*/`
+    return this.db.prepare(/*sql*/`
       SELECT * FROM "lessons"
       WHERE "course_id" = (SELECT "id" FROM "courses" WHERE "slug" = ?)
       ORDER BY "order" ASC;
     `).all(courseSlug) as LessonType[];
   };
   selectLesson(courseSlug: string, lessonSlug: string) {
-    return this.db.query(/*sql*/`
+    return this.db.prepare(/*sql*/`
       SELECT * FROM "lessons"
       WHERE "course_id" = (SELECT "id" FROM "courses" WHERE "slug" = ?) AND "slug" = ?
     `).get(courseSlug, lessonSlug) as LessonType | undefined;
   };
   selectLessonNav(courseSlug: string, lessonSlug: string) {
-    return this.db.query(/*sql*/`
+    return this.db.prepare(/*sql*/`
       SELECT "slug" FROM "lesson_nav"
       WHERE "course_id" = (SELECT "id" FROM "courses" WHERE "slug" = ?) AND "current_slug" = ?
     `).all(courseSlug, lessonSlug) as { slug: string}[];
@@ -93,25 +93,25 @@ export class LmsQuery extends Query {
     `).run(userId, courseId, lessonId);
   };
   selectLessonCompleted(userId: number, lessonId: number) {
-    return this.db.query(/*sql*/`
+    return this.db.prepare(/*sql*/`
       SELECT "completed" FROM "lessons_completed"
       WHERE "user_id" = ? AND "lesson_id" = ?
     `).get(userId, lessonId) as { completed: string } | undefined;
   };
   selectLessonsCompleted(userId: number, courseId: number) {
-    return this.db.query(/*sql*/`
+    return this.db.prepare(/*sql*/`
       SELECT "lesson_id", "completed" FROM "lessons_completed"
       WHERE "user_id" = ? AND "course_id" = ?
     `).all(userId, courseId) as { lesson_id: number, completed: string }[];
   };
   deleteLessonsCompleted(userId:number, courseId: number) {
-    return this.db.query(/*sql*/`
+    return this.db.prepare(/*sql*/`
       DELETE FROM "lessons_completed"
       WHERE "user_id" = ? AND "course_id" = ?
     `).run(userId, courseId);
   };
   selectProgress(userId: number, courseId: number) {
-    return this.db.query(/*sql*/`
+    return this.db.prepare(/*sql*/`
       SELECT "l"."id", "lc"."completed"
       FROM "lessons" AS "l"
       LEFT JOIN "lessons_completed" AS "lc"
@@ -129,12 +129,12 @@ export class LmsQuery extends Query {
     `).get(userId, courseId) as { id: string } | undefined;
   };
   selectCertificates(userId: number) {
-    return this.db.query(/*sql*/`
+    return this.db.prepare(/*sql*/`
       SELECT * FROM "certificates_full" WHERE "user_id" = ?
     `).all(userId) as CertificateFullType[];
   };
   selectCertificate(certificateId: string) {
-    return this.db.query(/*sql*/`
+    return this.db.prepare(/*sql*/`
       SELECT * FROM "certificates_full" WHERE "id" = ?
     `).get(certificateId) as CertificateFullType | undefined;
   };
