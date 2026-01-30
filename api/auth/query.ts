@@ -14,7 +14,7 @@ type UserType = {
 };
 
 type SessionType = {
-  sid_hash: string;
+  sid_hash: Buffer;
   user_id: number;
   created: number;
   expires: number;
