@@ -29,7 +29,7 @@ export class AuthApi extends Api {
 
       const { cookie } = await this.session.create({ userId: Number(user.id), ip: req.ip, ua: req.headers["user-agent"] ?? "" })
 
-      res.setHeader("Set-Cookie", cookie);
+      res.setCookie(cookie);
       res.status(200).json({ title: "Autenticado!" });
     }
   } satisfies Api["handlers"];
