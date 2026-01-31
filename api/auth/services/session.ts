@@ -8,13 +8,16 @@ type CreateType = {
   ua: string;
 }
 
+const ttlSec = 60*60*24*15 // 15 Dias
+
 export class SessionService extends CoreProvider {
   query = new AuthQuery(this.db);
   async create({ userId, ip, ua }: CreateType) {
     const sid = (await randomBytesAsync(32)).toString("base64url");
     const sid_hash = sha256(sid);
-    const expires_ms = Date.now() + 60*60*24*15 * 1000;
+    const expires_ms = Date.now() + ttlSec * 1000;
     this.query.insertSession({ sid_hash, user_id: userId, expires_ms, ip, ua });
-    return { sid };
+    const cookie = `__Secure-sid=${ sid }; Path=/; Max-Age=${ ttlSec }; HttpOnly; Secure; SameSite=Lax`
+    return { cookie };
   };
 };
