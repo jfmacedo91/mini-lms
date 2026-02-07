@@ -82,7 +82,7 @@
       });
 
       async function autenticado() {
-        const response = await fetch("/seguro");
+        const response = await fetch("/auth/session");
         const body = await response.json();
         result.innerText = JSON.stringify(body, null, 2);
       }

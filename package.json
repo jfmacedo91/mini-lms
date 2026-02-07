@@ -6,6 +6,9 @@
   "bugs": {
     "url": "https://github.com/jfmacedo91/mini-framework/issues"
   },
+  "scripts": {
+    "dev": "node --no-warnings --watch index.ts"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jfmacedo91/mini-framework.git"
