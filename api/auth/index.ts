@@ -35,13 +35,13 @@ export class AuthApi extends Api {
     getSession: (req, res) => {
       const sid = req.cookies[COOKIE_SID_KEY];
       if(!sid) {
-        throw new RouteError(401, "Não autorizado!")
+        throw new RouteError(401, "Não autorizado!");
       };
 
       const { valid, cookie, session } = this.session.validate(sid);
       res.setCookie(cookie);
       if(!valid || !session) {
-        throw new RouteError(401, "Não autorizado!")
+        throw new RouteError(401, "Não autorizado!");
       };
 
       res.setHeader("Cache-Control", "private, no-store");

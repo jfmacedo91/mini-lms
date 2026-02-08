@@ -1,12 +1,19 @@
 import type { IncomingMessage } from "node:http";
 import { parseCookies } from "../utils/parse-cookies.ts";
 
+export type UserRole = "admin" | "editor" | "user";
+
 export interface CustomRequest extends IncomingMessage {
   query: URLSearchParams;
   pathname: string;
   body: Record<string, any>;
   params: Record<string, any>;
   cookies: Record<string, string | undefined>;
+  session: {
+    user_id: number;
+    role: UserRole;
+    expires_ms: number;
+  } | null;
   ip: string;
 };
 
@@ -18,6 +25,7 @@ export async function customRequest(request: IncomingMessage) {
   req.params = {};
   req.body = {};
   req.cookies = parseCookies(req.headers.cookie);
+  req.session = null;
   req.ip = req.socket.remoteAddress || "127.0.0.1";
   return req;
 };

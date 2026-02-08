@@ -1,6 +1,5 @@
+import type { UserRole } from "../../core/http/custom-request.ts";
 import { Query } from "../../core/utils/abstract.ts";
-
-type UserRole = "admin" | "editor" | "user";
 
 type UserType = {
   id: number;
