@@ -48,6 +48,16 @@
       button:hover {
         background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
       }
+      #logout {
+        max-width: calc(600px - 2rem);
+        margin: 0 auto;
+        color: rgba(255, 50, 50, 0.7);
+        background: linear-gradient(to bottom, rgba(255, 50, 50, 0.15), rgba(255, 50, 50, 0.05));
+        border: 1px solid rgba(64, 34, 34, 0.3);
+      }
+      #logout:hover {
+        background: linear-gradient(to bottom, rgba(255, 50, 50, 0.2), rgba(255, 50, 50, 0.1));
+      }
     </style>
 
     <form id="login">
@@ -58,11 +68,14 @@
       <button>Logar</button>
     </form>
 
+    <button id="logout">Sair</button>
+
     <pre id="result"></pre>
 
     <script>
       const form = document.querySelector("#login");
       const result = document.querySelector("#result");
+      const logout = document.querySelector("#logout");
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -81,8 +94,18 @@
         }
       });
 
+      logout.addEventListener("click", async (event) => {
+        event.preventDefault();
+        const response = await fetch("/auth/logout", {
+          method: "DELETE"
+        });
+        if(response.ok) {
+          window.location.reload();
+        }
+      });
+
       async function autenticado() {
-        const response = await fetch("/lms/course/html-e-css");
+        const response = await fetch("/auth/session");
         const body = await response.json();
         result.innerText = JSON.stringify(body, null, 2);
       }
