@@ -45,6 +45,11 @@ export class AuthQuery extends Query {
         (?, ?, ?, ?, ?);
     `).run(sid_hash, user_id, Math.floor(expires_ms / 1000), ip, ua);
   };
+  selectUser(key: "email" | "username" | "id", value: string) {
+    return this.db.query(/*sql*/`
+      SELECT "id", "password_hash" FROM "users" WHERE ${ key } = ?
+    `).get(value) as { "id": number, "password_hash": string } | undefined;
+  };
   selectSession(sid_hash: Buffer) {
     return this.db.query(/*sql*/`
       SELECT *, "expires" * 1000 AS "expires_ms" FROM "sessions" WHERE "sid_hash" = ?;
