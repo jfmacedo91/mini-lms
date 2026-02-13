@@ -33,6 +33,32 @@ export class AuthApi extends Api {
 
       res.status(201).json({ title: "Usuário criado com sucesso!" });
     },
+    updatePassword: async (req, res) => {
+      const { current_password, new_password } = req.body;
+      if(!req.session) {
+        throw new RouteError(401, "Não autorizado!");
+      };
+
+      const { user_id } = req.session;
+      const user = this.query.selectUser("id", user_id);
+      if(!user) {
+        throw new RouteError(401, "Usuário não encontrado!");
+      };
+
+      if(!this.pass.verify(current_password, user.password_hash)) {
+        throw new RouteError(401, "Senha incorreta!");
+      };
+      
+      const new_password_hash = await this.pass.hash(new_password);
+
+      this.query.updatePassword(user_id, new_password_hash);
+      this.query.revokeSession("user_id", user.id);
+
+      const { cookie } = await this.session.create({ userId: Number(user.id), ip: req.ip, ua: req.headers["user-agent"] ?? "" })
+
+      res.setCookie(cookie);
+      res.status(200).json({ title: "Senha atualizada!" });
+    },
     postLogin: async (req, res) => {
       const { email, password } = req.body;
       const user = this.query.selectUser("email", email);
@@ -72,6 +98,8 @@ export class AuthApi extends Api {
   routes(): void {
     this.router.post("/auth/user", this.handlers.postUser);
     this.router.post("/auth/login", this.handlers.postLogin);
+
+    this.router.put("/auth/update/password", this.handlers.updatePassword, [this.auth.guard("user")]);
 
     this.router.get("/auth/session", this.handlers.getSession, [this.auth.guard("user")]);
 

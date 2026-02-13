@@ -70,10 +70,19 @@
 
     <button id="logout">Sair</button>
 
+     <form id="updatePassword">
+      <label for="current_password">Senha Atual</label>
+      <input type="password" name="current_password" id="current_password" />
+      <label for="new_password">Senha Nova</label>
+      <input type="password" name="new_password" id="new_password" />
+      <button>Atulizar</button>
+    </form>
+
     <pre id="result"></pre>
 
     <script>
       const form = document.querySelector("#login");
+      const updatePassword = document.querySelector("#updatePassword");
       const result = document.querySelector("#result");
       const logout = document.querySelector("#logout");
 
@@ -82,6 +91,23 @@
         const data = new FormData(form);
         const response = await fetch("/auth/login", {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(Object.fromEntries(data)),
+        });
+        const body = await response.json();
+        result.innerText = JSON.stringify(body, null, 2);
+        if (response.ok) {
+          window.location.reload();
+        }
+      });
+
+      updatePassword.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const data = new FormData(updatePassword);
+        const response = await fetch("/auth/update/password", {
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
