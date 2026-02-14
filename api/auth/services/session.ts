@@ -3,7 +3,7 @@ import { AuthQuery } from "../query.ts";
 import { randomBytesAsync, sha256 } from "../utils/utils.ts";
 
 type CreateType = {
-  userId: number;
+  user_id: number;
   ip: string;
   ua: string;
 }
@@ -18,11 +18,11 @@ function sidCookie(sid: string, expires: number) {
 
 export class SessionService extends CoreProvider {
   query = new AuthQuery(this.db);
-  async create({ userId, ip, ua }: CreateType) {
+  async create({ user_id, ip, ua }: CreateType) {
     const sid = (await randomBytesAsync(32)).toString("base64url");
     const sid_hash = sha256(sid);
     const expires_ms = Date.now() + ttlSec * 1000;
-    this.query.insertSession({ sid_hash, user_id: userId, expires_ms, ip, ua });
+    this.query.insertSession({ sid_hash, user_id: user_id, expires_ms, ip, ua });
     const cookie = sidCookie(sid, ttlSec);
     return { cookie };
   };
@@ -41,7 +41,7 @@ export class SessionService extends CoreProvider {
     let expires_ms = session.expires_ms;
 
     if(now >= expires_ms) {
-      this.query.revokeSession("sid_hash", sid_hash);
+      this.query.revokeSession(sid_hash);
       return {
         valid: false,
         cookie: sidCookie("", 0)
@@ -57,7 +57,7 @@ export class SessionService extends CoreProvider {
     const user = this.query.selectUserRole(session.user_id);
 
     if(!user) {
-      this.query.revokeSession("sid_hash", sid_hash);
+      this.query.revokeSession(sid_hash);
       return {
         valid: false,
         cookie: sidCookie("", 0)
@@ -79,7 +79,7 @@ export class SessionService extends CoreProvider {
     try {
       if(sid) {
         const sid_hash = sha256(sid);
-        this.query.revokeSession("sid_hash", sid_hash)
+        this.query.revokeSession(sid_hash)
       };
     } catch(error) {
       console.error("Erro ao revogar cookie: ", error);
@@ -87,4 +87,7 @@ export class SessionService extends CoreProvider {
 
     return { cookie };
   };
+  invalidateAll(user_id: number) {
+    this.query.revokeSessions(user_id)
+  }
 };

@@ -37,6 +37,11 @@ export class AuthQuery extends Query {
         (?, ?, ?, ?, ?);
     `).run(name, username, email, role, password_hash);
   };
+  updateUser(user_id: number, key: "password_hash" | "email" | "name", value: string) {
+    return this.db.query(/*sql*/`
+      UPDATE "users" SET ${ key } = ? WHERE "id" = ?;
+    `).run(value, user_id);
+  };
   insertSession({ sid_hash, user_id, expires_ms, ip, ua }: SessionCreate) {
     return this.db.query(/*sql*/`
       INSERT OR IGNORE INTO "sessions"
@@ -55,20 +60,20 @@ export class AuthQuery extends Query {
       SELECT *, "expires" * 1000 AS "expires_ms" FROM "sessions" WHERE "sid_hash" = ?;
     `).get(sid_hash) as SessionType & { expires_ms: number } | undefined;
   };
-  revokeSession(key: "sid_hash" | "user_id", value: Buffer | number) {
+  revokeSession(sid_hash: Buffer) {
     return this.db.query(/*sql*/`
-      UPDATE "sessions" SET "revoked" = 1 WHERE ${ key } = ?;
-    `).run(value);
+      UPDATE "sessions" SET "revoked" = 1 WHERE "sid_hash" = ?;
+    `).run(sid_hash);
+  };
+  revokeSessions(user_id: number) {
+    return this.db.query(/*sql*/`
+      UPDATE "sessions" SET "revoked" = 1 WHERE "user_id" = ?;
+    `).run(user_id);
   };
   updateSessionExpires(sid_hash: Buffer, expires_ms: number) {
     return this.db.query(/*sql*/`
       UPDATE "sessions" SET "expires" = ? WHERE "sid_hash" = ?;
     `).run(Math.floor(expires_ms / 1000), sid_hash);
-  };
-  updatePassword(user_id: number, new_password: string) {
-    return this.db.query(/*sql*/`
-      UPDATE "users" SET "password_hash" = ? WHERE "id" = ?;
-    `).run(new_password, user_id);
   };
   selectUserRole(id: number) {
     return this.db.query(/*sql*/`

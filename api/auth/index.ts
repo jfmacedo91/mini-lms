@@ -39,22 +39,25 @@ export class AuthApi extends Api {
         throw new RouteError(401, "Não autorizado!");
       };
 
-      const { user_id } = req.session;
-      const user = this.query.selectUser("id", user_id);
+      const user = this.query.selectUser("id", req.session.user_id);
       if(!user) {
-        throw new RouteError(401, "Usuário não encontrado!");
+        throw new RouteError(404, "Usuário não encontrado!");
       };
 
       if(!this.pass.verify(current_password, user.password_hash)) {
-        throw new RouteError(401, "Senha incorreta!");
+        throw new RouteError(400, "Senha atual incorreta!");
       };
       
       const new_password_hash = await this.pass.hash(new_password);
 
-      this.query.updatePassword(user_id, new_password_hash);
-      this.query.revokeSession("user_id", user.id);
+      const updateResult = this.query.updateUser(user.id, "password_hash", new_password_hash);
+      if(updateResult.changes === 0) {
+        throw new RouteError(400, "Erro ao atualizar senha!");
+      }
 
-      const { cookie } = await this.session.create({ userId: Number(user.id), ip: req.ip, ua: req.headers["user-agent"] ?? "" })
+      this.session.invalidateAll(user.id);
+
+      const { cookie } = await this.session.create({ user_id: user.id, ip: req.ip, ua: req.headers["user-agent"] ?? "" });
 
       res.setCookie(cookie);
       res.status(200).json({ title: "Senha atualizada!" });
@@ -71,7 +74,7 @@ export class AuthApi extends Api {
         throw new RouteError(404, "Email ou senha incorretos!");
       };
 
-      const { cookie } = await this.session.create({ userId: Number(user.id), ip: req.ip, ua: req.headers["user-agent"] ?? "" })
+      const { cookie } = await this.session.create({ user_id: Number(user.id), ip: req.ip, ua: req.headers["user-agent"] ?? "" })
 
       res.setCookie(cookie);
       res.status(200).json({ title: "Autenticado!" });

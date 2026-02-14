@@ -49,14 +49,18 @@ export class Password {
     }
   };
   async verify(password: string, password_hash: string) {
-    const { stored_norm, stored_options, stored_salt, stored_dk } = this.parse(password_hash);
-    const password_normalized = password.normalize(stored_norm);
-    const password_hmac = createHmac("sha256", this.PEPPER).update(password_normalized).digest();
-    const dk = await scryptAsync(password_hmac, stored_salt, this.DK_LEN, stored_options);
-    
-    if(dk.length !== stored_dk.length) return false;
-
-    return timingSafeEqual(dk, stored_dk);
+    try {
+      const { stored_norm, stored_options, stored_salt, stored_dk } = this.parse(password_hash);
+      const password_normalized = password.normalize(stored_norm);
+      const password_hmac = createHmac("sha256", this.PEPPER).update(password_normalized).digest();
+      const dk = await scryptAsync(password_hmac, stored_salt, this.DK_LEN, stored_options);
+      
+      if(dk.length !== stored_dk.length) return false;
+  
+      return timingSafeEqual(dk, stored_dk);
+    } catch(error) {
+      return false;
+    };
   };
 };
 
