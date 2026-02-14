@@ -33,7 +33,24 @@ export class AuthApi extends Api {
 
       res.status(201).json({ title: "Usuário criado com sucesso!" });
     },
-    updatePassword: async (req, res) => {
+    postLogin: async (req, res) => {
+      const { email, password } = req.body;
+      const user = this.query.selectUser("email", email);
+      if(!user) {
+        throw new RouteError(404, "Email ou senha incorretos!");
+      };
+
+      const validPassword = await this.pass.verify(password, user.password_hash);
+      if(!validPassword) {
+        throw new RouteError(404, "Email ou senha incorretos!");
+      };
+
+      const { cookie } = await this.session.create({ user_id: Number(user.id), ip: req.ip, ua: req.headers["user-agent"] ?? "" })
+
+      res.setCookie(cookie);
+      res.status(200).json({ title: "Autenticado!" });
+    },
+    passwordUpdate: async (req, res) => {
       const { current_password, new_password } = req.body;
       if(!req.session) {
         throw new RouteError(401, "Não autorizado!");
@@ -62,22 +79,26 @@ export class AuthApi extends Api {
       res.setCookie(cookie);
       res.status(200).json({ title: "Senha atualizada!" });
     },
-    postLogin: async (req, res) => {
-      const { email, password } = req.body;
+    passwordForgot: async (req, res) => {
+      const { email } = req.body;
       const user = this.query.selectUser("email", email);
       if(!user) {
-        throw new RouteError(404, "Email ou senha incorretos!");
+        return res.status(200).json({ title: "Verifique seu email!"});
       };
 
-      const validPassword = await this.pass.verify(password, user.password_hash);
-      if(!validPassword) {
-        throw new RouteError(404, "Email ou senha incorretos!");
+      const { token } = await this.session.resetToken({ user_id: user.id, ip: req.ip, ua: req.headers["user-agent"] ?? "" });
+      const resetLink = `${req.baseurl}/password/reset/?token=${ token }`;
+      const emailContent = {
+        to: user.email,
+        subject: "Password Reset",
+        body: `Utilize o link abaixo para resetar sua senha: \r\n ${ resetLink }`
       };
 
-      const { cookie } = await this.session.create({ user_id: Number(user.id), ip: req.ip, ua: req.headers["user-agent"] ?? "" })
-
-      res.setCookie(cookie);
-      res.status(200).json({ title: "Autenticado!" });
+      console.log(emailContent);
+      res.status(200).json({ title: "Verifique seu email!"})
+    },
+    passwordReset: async (req, res) => {
+      
     },
     getSession: (req, res) => {
       if(!req.session) {
@@ -101,8 +122,10 @@ export class AuthApi extends Api {
   routes(): void {
     this.router.post("/auth/user", this.handlers.postUser);
     this.router.post("/auth/login", this.handlers.postLogin);
+    this.router.post("/auth/password/forgot", this.handlers.passwordForgot);
+    this.router.post("/auth/password/reset", this.handlers.passwordReset);
 
-    this.router.put("/auth/update/password", this.handlers.updatePassword, [this.auth.guard("user")]);
+    this.router.put("/auth/password/update", this.handlers.passwordUpdate, [this.auth.guard("user")]);
 
     this.router.get("/auth/session", this.handlers.getSession, [this.auth.guard("user")]);
 

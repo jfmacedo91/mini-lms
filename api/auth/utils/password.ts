@@ -63,12 +63,3 @@ export class Password {
     };
   };
 };
-
-const password = "P@ssw0rd";
-const passwordClass = new Password("Segredo");
-
-const password_hash = await passwordClass.hash(password);
-
-const isTrue = await passwordClass.verify(password, password_hash);
-const isFalse = await passwordClass.verify("12345678", password_hash);
-console.log({ isTrue, isFalse });
