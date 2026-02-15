@@ -83,12 +83,22 @@
       <button>Esqueci a senha</button>
     </form>
 
+    <form id="resetPassword">
+      <h2>Redefinir senha</h2>
+      <label for="token">Token</label>
+      <input type="text" name="token" id="token" />
+      <label for="reset_new_password">Senha Nova</label>
+      <input type="password" name="reset_new_password" id="reset_new_password" />
+      <button>Redefinir senha</button>
+    </form>
+
     <pre id="result"></pre>
 
     <script>
       const login = document.querySelector("#login");
       const updatePassword = document.querySelector("#updatePassword");
       const forgotPassword = document.querySelector("#forgotPassword");
+      const resetPassword = document.querySelector("#resetPassword");
       const result = document.querySelector("#result");
       const logout = document.querySelector("#logout");
 
@@ -130,6 +140,23 @@
         event.preventDefault();
         const data = new FormData(forgotPassword);
         const response = await fetch("/auth/password/forgot", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(Object.fromEntries(data)),
+        });
+        const body = await response.json();
+        result.innerText = JSON.stringify(body, null, 2);
+        if (response.ok) {
+          window.location.reload();
+        }
+      });
+
+      resetPassword.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const data = new FormData(resetPassword);
+        const response = await fetch("/auth/password/reset", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

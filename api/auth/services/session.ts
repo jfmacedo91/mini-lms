@@ -97,4 +97,19 @@ export class SessionService extends CoreProvider {
     this.query.insertReset({ token_hash, expires_ms, user_id, ip, ua });
     return { token };
   };
+  validateToken(token: string) {
+    const now = Date.now();
+    const token_hash = sha256(token);
+    const reset = this.query.selectReset(token_hash);
+    if(!reset) {
+      return null;
+    };
+    if(now > reset.expires_ms) {
+      return null;
+    };
+    this.query.revokeSessions(reset.user_id);
+    this.query.deleteResets(reset.user_id);
+
+    return { user_id: reset.user_id };
+  };
 };

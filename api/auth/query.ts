@@ -101,4 +101,14 @@ export class AuthQuery extends Query {
         (?, ?, ?, ?, ?);
     `).run(token_hash, user_id, Math.floor(expires_ms / 1000), ip, ua);
   };
+  selectReset(token_hash: Buffer) {
+    return this.db.query(/*sql*/`
+      SELECT *, "expires" * 1000 AS "expires_ms" FROM "resets" WHERE "token_hash" = ?;
+    `).get(token_hash) as ResetType & { expires_ms: number } | undefined;
+  };
+  deleteResets(user_id: number) {
+    return this.db.query(/*sql*/`
+      DELETE FROM "resets" WHERE "user_id" = ?;
+    `).run(user_id);
+  };
 };
