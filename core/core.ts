@@ -56,5 +56,9 @@ export class Core {
     this.server.listen(3000, () => {
       console.log("Server running: http://localhost:3000");
     });
+    this.server.on("clientError", (error, socket) => {
+      console.log(error);
+      socket.destroy();
+    });
   };
 };

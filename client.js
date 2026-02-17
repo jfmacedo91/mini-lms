@@ -103,6 +103,17 @@ const functions = {
 		const response = await fetch(base + "/lms/certificate/" + process.argv[3]);
 		const body = await response.json();
 		console.log(body);
+	},
+	async postBig() {
+		const response = await fetch(base + "/", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				big: "a".repeat(3_000_000)
+			},
+			body: JSON.stringify("a".repeat(3_000_000))
+		});
+		const body = await response.json();
 	}
 };
 
