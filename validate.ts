@@ -13,3 +13,9 @@ function boolean(value: unknown) {
   if(value === false || value === "false" || value === 0 || value === "0" || value === "off") return false;
   return undefined;
 };
+
+function cpf(value: string) {
+  return value.replace(/\D+/g, "");
+}
+
+console.log(cpf("146.104.560-60"));
