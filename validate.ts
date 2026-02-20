@@ -16,6 +16,10 @@ function boolean(value: unknown) {
 
 function cpf(value: string) {
   return value.replace(/\D+/g, "");
+};
+
+function email(value: string) {
+  return /^[^@]+@[^@]+$/.test(value) ? value : undefined;
 }
 
 function removeZw(value: string) {
