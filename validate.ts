@@ -18,4 +18,8 @@ function cpf(value: string) {
   return value.replace(/\D+/g, "");
 }
 
-console.log(cpf("146.104.560-60"));
+function removeZw(value: string) {
+  return value.replace(/[\u200B-\u200D\u2060\uFEFF]/g, "");
+};
+
+console.log(removeZw("Jean\u200B\u200C\u200D\uFEFF\u2060".trim()).length);
