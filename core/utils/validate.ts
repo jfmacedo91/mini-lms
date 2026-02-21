@@ -42,7 +42,7 @@ const email_regex = /^[^@]+@[^@]+\.[^@]+$/;
 function email(value: unknown) {
   const email_string = string(value)?.toLowerCase();
   if(email_string === undefined) return undefined;
-  return email_regex.test(email_string) ? value : undefined;
+  return email_regex.test(email_string) ? email_string : undefined;
 };
 
 const password_regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
