@@ -1,5 +1,6 @@
 import { Api } from "../../core/utils/abstract.ts";
 import { RouteError } from "../../core/utils/route-error.ts";
+import { validate } from "../../core/utils/validate.ts";
 import { AuthMiddleware } from "../auth/middlewares/auth.ts";
 import { LmsQuery } from "./query.ts";
 import { lmsTables } from "./tables.ts";
@@ -9,7 +10,13 @@ export class LmsApi extends Api {
   auth = new AuthMiddleware(this.core);
   handlers = {
     postCourse: (req, res) => {
-      const { slug, title, description, lessons, hours } = req.body;
+      const { slug, title, description, lessons, hours } = {
+        slug: validate.string(req.body.slug),
+        title: validate.string(req.body.title),
+        description: validate.string(req.body.description),
+        lessons: validate.number(req.body.lessons),
+        hours: validate.number(req.body.hours)
+      };
       const writeResult = this.query.insertCourse({ slug, title, description, lessons, hours })
       if(writeResult.changes === 0) {
         throw new RouteError(400, "Erro ao criar curso!");
@@ -22,7 +29,16 @@ export class LmsApi extends Api {
       });
     },
     postLesson: (req, res) => {
-      const { courseSlug, slug, title, seconds, video, description, order, free } = req.body;
+      const { courseSlug, slug, title, seconds, video, description, order, free } = {
+        courseSlug: validate.string(req.body.courseSlug),
+        slug: validate.string(req.body.slug),
+        title: validate.string(req.body.title),
+        seconds: validate.number(req.body.seconds),
+        video: validate.string(req.body.video),
+        description: validate.string(req.body.description),
+        order: validate.number(req.body.order),
+        free: validate.number(req.body.free),
+      };
       const writeResult = this.query.insertLesson({ courseSlug, slug, title, seconds, video, description, order, free })
       if(writeResult.changes === 0) {
         throw new RouteError(400, "Erro ao criar aula!");
@@ -36,7 +52,11 @@ export class LmsApi extends Api {
     },
     postLessonCompleted: (req, res) => {
       const userId = 1;
-      const { courseId, lessonId } = req.body;
+
+      const { courseId, lessonId } = {
+        courseId: validate.number(req.body.courseId),
+        lessonId: validate.number(req.body.lessonId)
+      };
 
       const writeResult = this.query.insertLessonCompleted(userId, courseId, lessonId);
       if(writeResult.changes === 0) {
@@ -101,7 +121,7 @@ export class LmsApi extends Api {
     },
     resetCourse: (req, res) => {
       const userId = 1;
-      const { courseId } = req.body;
+      const courseId = validate.number(req.body.courseId);
       const writeResult = this.query.deleteLessonsCompleted(userId, courseId);
       if(writeResult.changes === 0) {
         throw new RouteError(400, "Erro ao resetar o curso!");

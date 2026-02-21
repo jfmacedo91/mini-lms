@@ -6,8 +6,8 @@ export type UserRole = "admin" | "editor" | "user";
 export interface CustomRequest extends IncomingMessage {
   query: URLSearchParams;
   pathname: string;
-  body: Record<string, any>;
-  params: Record<string, any>;
+  body: Record<string, unknown>;
+  params: Record<string, string>;
   cookies: Record<string, string | undefined>;
   session: {
     user_id: number;

@@ -1,5 +1,6 @@
 import { Api } from "../../core/utils/abstract.ts";
 import { RouteError } from "../../core/utils/route-error.ts";
+import { validate } from "../../core/utils/validate.ts";
 import { AuthMiddleware } from "./middlewares/auth.ts";
 import { AuthQuery } from "./query.ts";
 import { COOKIE_SID_KEY, SessionService } from "./services/session.ts";
@@ -13,8 +14,12 @@ export class AuthApi extends Api {
   pass = new Password("segredo");
   handlers = {
     postUser: async (req, res) => {
-      const { name, username, email, password } = req.body;
-
+      const { name, username, email, password } = {
+        name: validate.string(req.body.name),
+        username: validate.string(req.body.username),
+        email: validate.email(req.body.email),
+        password: validate.password(req.body.password),
+      };
       const emailExists = this.query.selectUser("email", email);
       if(emailExists) {
         throw new RouteError(409, "Email já cadastrado!");
@@ -34,7 +39,10 @@ export class AuthApi extends Api {
       res.status(201).json({ title: "Usuário criado com sucesso!" });
     },
     postLogin: async (req, res) => {
-      const { email, password } = req.body;
+      const { email, password } = {
+        email: validate.email(req.body.email),
+        password: validate.password(req.body.password)
+      };
       const user = this.query.selectUser("email", email);
       if(!user) {
         throw new RouteError(404, "Email ou senha incorretos!");
@@ -51,7 +59,10 @@ export class AuthApi extends Api {
       res.status(200).json({ title: "Autenticado!" });
     },
     passwordUpdate: async (req, res) => {
-      const { current_password, new_password } = req.body;
+      const { current_password, new_password } = {
+        current_password: validate.password(req.body.current_password),
+        new_password: validate.password(req.body.new_password)
+      };
       if(!req.session) {
         throw new RouteError(401, "Não autorizado!");
       };
@@ -80,7 +91,7 @@ export class AuthApi extends Api {
       res.status(200).json({ title: "Senha atualizada!" });
     },
     passwordForgot: async (req, res) => {
-      const { email } = req.body;
+      const email = validate.email(req.body.email);
       const user = this.query.selectUser("email", email);
       if(!user) {
         return res.status(200).json({ title: "Verifique seu email!"});
@@ -98,7 +109,10 @@ export class AuthApi extends Api {
       res.status(200).json({ title: "Verifique seu email!"})
     },
     passwordReset: async (req, res) => {
-      const { token, reset_new_password } = req.body;
+      const { token, reset_new_password } = {
+        token: validate.string(req.body.token),
+        reset_new_password: validate.password(req.body.reset_new_password)
+      };
       const reset = this.session.validateToken(token);
       if(!reset) {
         throw new RouteError(400, "Token inválido!");
