@@ -1,4 +1,12 @@
-{
-  "name": "Jean",
-  "email": "jean@mail.com"
-}
+[
+  {
+    "name": "Jean",
+    "email": "jean@mail.com",
+    "lifetime": "true"
+  },
+  {
+    "name": "Jéssica",
+    "email": "jlcm@mail.com",
+    "lifetime": "false"
+  }
+]
