@@ -1,6 +1,6 @@
 import path from "node:path";
 import { Api } from "../../core/utils/abstract.ts";
-import { createReadStream } from "node:fs";
+import { createReadStream, createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
 import { validate } from "../../core/utils/validate.ts";
 import { checkETag, mimeType } from "./utils.ts";
@@ -34,9 +34,16 @@ export class FilesApi extends Api {
       res.status(200);
       const file = createReadStream(filePath);
       await pipeline(file, res);
+    },
+    uploadFile: async (req, res) => {
+      const name = req.headers["x-filename"];
+      const writeStream = createWriteStream(`./files/${ name }`);
+      await pipeline(req, writeStream);
+      res.end("Ok!");
     }
   } satisfies Api["handlers"];
   routes(): void {
     this.router.get("/files/:name", this.handlers.sendFile);
+    this.router.post("/files", this.handlers.uploadFile);
   };
 };
