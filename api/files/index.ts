@@ -3,7 +3,7 @@ import { Api } from "../../core/utils/abstract.ts";
 import { createReadStream, createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
 import { validate } from "../../core/utils/validate.ts";
-import { checkETag, mimeType } from "./utils.ts";
+import { checkETag, limitBytes, mimeType } from "./utils.ts";
 import { rename, rm, stat } from "node:fs/promises";
 import { RouteError } from "../../core/utils/route-error.ts";
 import { randomUUID } from "node:crypto";
@@ -58,11 +58,15 @@ export class FilesApi extends Api {
       const writePath = path.join(FILES_PATH, finalName);
       const writeStream = createWriteStream(tempPath, { flags: "wx" });
       try {
-        await pipeline(req, writeStream);
+        await pipeline(req, limitBytes(MAX_BYTES), writeStream);
         await rename(tempPath, writePath);
         res.status(201).end("Ok!");
       } catch(error) {
-        throw new RouteError(500, "Erro!");
+        if(error instanceof RouteError) {
+          throw new RouteError(error.status, error.message);
+        } else {
+          throw new RouteError(500, "Erro!");
+        };
       } finally {
         await rm(tempPath, { force: true }).catch(() => {});
       };

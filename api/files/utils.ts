@@ -1,3 +1,6 @@
+import { Transform } from "node:stream";
+import { RouteError } from "../../core/utils/route-error.ts";
+
 export const mimeType: Record<string, string> = {
   ".css": "text/css",
   ".html": "text/html",
@@ -20,4 +23,17 @@ export function checkETag(match: string | undefined, etag: string) {
   if(!match) return false;
   const tags = match.split(",").map(tag => tag.trim());
   return tags.includes(etag);
+};
+
+export function limitBytes(max: number) {
+  let size = 0;
+  return new Transform({
+    transform(chunk, _encode, next) {
+      size += chunk.length;
+      if(size > max) {
+        return next(new RouteError(413, "Corpo muito grande!"));
+      };
+      next(null, chunk);
+    }
+  });
 };
