@@ -2,214 +2,142 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tiny LMS</title>
-  </head>
-  <body>
     <style>
       * {
-        box-sizing: border-box;
-        font-family: sans-serif;
-      }
-      body {
-        background: black;
-        color: white;
-        font-size: 1.125rem;
-      }
-      form,
-      pre {
         margin: 0;
-        max-width: 600px;
-        padding: 1rem;
-        margin: 0 auto;
-        overflow: auto;
-        font-family: monospace;
-      }
-      input,
-      button {
-        display: block;
-        width: 100%;
-        padding: 0.75rem;
-        margin: 0.5rem 0 1rem 0;
-        border-radius: 1rem;
-        corner-shape: squircle;
-        color: white;
-        border: 1px solid #222;
-      }
-      input {
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025));
-      }
-      input:focus {
-        outline: white;
-        border-color: white;
-      }
-      button {
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
-        cursor: pointer;
-      }
-      button:hover {
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-      }
-      #logout {
-        max-width: calc(600px - 2rem);
-        margin: 0 auto;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Lora", "serif";
+        /* corner-shape: squircle; */
       }
     </style>
-
-    <form id="upload">
-      <input type="file" name="files" id="files" multiple />
-      <button>Upload</button>
-    </form>
-
-    <form id="login">
-      <h2>Login</h2>
-      <label for="email">Email</label>
-      <input type="email" name="email" id="email" value="jean@email.com" />
-      <label for="password">Senha</label>
-      <input type="password" name="password" id="password" value="Jean123456" />
-      <button>Logar</button>
-    </form>
-
-    <button id="logout">Sair</button>
-    
-    <form id="updatePassword">
-      <h2>Alterar password</h2>
-      <label for="current_password">Senha Atual</label>
-      <input type="password" name="current_password" id="current_password" />
-      <label for="new_password">Senha Nova</label>
-      <input type="password" name="new_password" id="new_password" />
-      <button>Atualizar</button>
-    </form>
-
-    <form id="forgotPassword">
-      <h2>Recuperar senha</h2>
-      <label for="email">Email</label>
-      <input type="email" name="email" value="jean@email.com" />
-      <button>Esqueci a senha</button>
-    </form>
-
-    <form id="resetPassword">
-      <h2>Redefinir senha</h2>
-      <label for="token">Token</label>
-      <input type="text" name="token" id="token" />
-      <label for="reset_new_password">Senha Nova</label>
-      <input type="password" name="reset_new_password" id="reset_new_password" />
-      <button>Redefinir senha</button>
-    </form>
-
-    <pre id="result"></pre>
-
-    <script>
-      const login = document.querySelector("#login");
-      const updatePassword = document.querySelector("#updatePassword");
-      const forgotPassword = document.querySelector("#forgotPassword");
-      const resetPassword = document.querySelector("#resetPassword");
-      const result = document.querySelector("#result");
-      const logout = document.querySelector("#logout");
-      const upload = document.querySelector("#upload");
-
-      upload.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const input = upload.querySelector("input[type=file]");
-        const files = input.files;
-        if(!files || files.length === 0) return;
-        for(const file of files) {
-          const response = await fetch("/files", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/octet-stream",
-              "x-filename": file.name
-            },
-            body: file,
-          });
-        };
-      });
-
-      login.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const data = new FormData(login);
-        const response = await fetch("/auth/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(Object.fromEntries(data)),
-        });
-        const body = await response.json();
-        result.innerText = JSON.stringify(body, null, 2);
-        if (response.ok) {
-          window.location.reload();
-        }
-      });
-
-      updatePassword.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const data = new FormData(updatePassword);
-        const response = await fetch("/auth/password/update", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(Object.fromEntries(data)),
-        });
-        const body = await response.json();
-        result.innerText = JSON.stringify(body, null, 2);
-        if (response.ok) {
-          window.location.reload();
-        }
-      });
-      
-      forgotPassword.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const data = new FormData(forgotPassword);
-        const response = await fetch("/auth/password/forgot", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(Object.fromEntries(data)),
-        });
-        const body = await response.json();
-        result.innerText = JSON.stringify(body, null, 2);
-        if (response.ok) {
-          window.location.reload();
-        }
-      });
-
-      resetPassword.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const data = new FormData(resetPassword);
-        const response = await fetch("/auth/password/reset", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(Object.fromEntries(data)),
-        });
-        const body = await response.json();
-        result.innerText = JSON.stringify(body, null, 2);
-        if (response.ok) {
-          window.location.reload();
-        }
-      });
-
-      logout.addEventListener("click", async (event) => {
-        event.preventDefault();
-        const response = await fetch("/auth/logout", {
-          method: "DELETE"
-        });
-        if(response.ok) {
-          window.location.reload();
-        }
-      });
-
-      async function autenticado() {
-        const response = await fetch("/auth/session");
-        const body = await response.json();
-        result.innerText = JSON.stringify(body, null, 2);
-      }
-
-      autenticado();
-    </script>
+  </head>
+  <body>
+    <h1>Tiny LMS</h1>
+    <div class="container">
+      <nav data-role="public">
+        <ul>
+          <li><a href="#/login">Login</a></li>
+          <li><a href="#/criar-conta">Criar</a></li>
+        </ul>
+      </nav>
+      <nav data-role="user">
+        <ul>
+          <li><a href="#/cursos">Cursos</a></li>
+          <li><a href="#/certificados">Certificados</a></li>
+          <li><a href="#/sair">Sair</a></li>
+        </ul>
+      </nav>
+      <nav data-role="admin">
+        <ul>
+          <li><a href="#/criar-curso">Cursos</a></li>
+          <li><a href="#/criar-aula">Aulas</a></li>
+          <li><a href="#/usuarios">Usuários</a></li>
+          <li><a href="#/sair">Sair</a></li>
+        </ul>
+      </nav>
+      <section id="login" data-role="public">
+        <h2>Login</h2>
+        <form>
+          <label for="email">E-mail</label>
+          <input type="email" name="email" id="email" />
+          <label for="password">Senha</label>
+          <input type="password" name="password" id="password" />
+          <div class="split">
+            <button>Login</button>
+            <a href="#/recuperar">Recuperar Senha</a>
+          </div>
+        </form>
+      </section>
+      <section id="recuperar" data-role="public">
+        <h2>Esqueceu a senha?</h2>
+        <form>
+          <label for="email-recuperar">E-mail</label>
+          <input type="email" name="email" id="email-recuperar" />
+          <button>Recuperar</button>
+        </form>
+      </section>
+      <section id="resetar" data-role="public">
+        <h2>Resetar Senha</h2>
+        <form>
+          <label for="reset-new-password">Nova Senha</label>
+          <input type="password" name="reset_new_password" id="reset-new-password" />
+          <input type="hidden" name="token" />
+          <button>Resetar</button>
+        </form>
+      </section>
+      <section id="criar-conta" data-role="public">
+        <h2>Criar Conta</h2>
+        <form>
+          <label for="name-criar">Nome</label>
+          <input type="text" name="name" id="name-criar" />
+          <label for="username-criar">Nome de usuário</label>
+          <input type="text" name="username" id="username-criar" />
+          <label for="email-criar">E-mail</label>
+          <input type="email" name="email" id="email-criar" />
+          <label for="password-criar">Senha</label>
+          <input type="password" name="password" id="password-criar" />
+          <button>Criar Conta</button>
+        </form>
+      </section>
+      <section id="criar-curso" data-role="admin">
+        <div class="render"></div>
+        <form>
+          <label for="slug-curso">Slug</label>
+          <input type="text" name="slug" id="slug-curso" />
+          <label for="title-curso">Título</label>
+          <input type="text" name="title" id="title-curso" />
+          <label for="description-curso">Descrição</label>
+          <input type="text" name="description" id="description-curso" />
+          <label for="lessons-curso">Aulas</label>
+          <input type="number" name="lessons" id="lessons-curso" />
+          <label for="hours-curso">Horas</label>
+          <input type="number" name="hours" id="hours-curso" />
+          <button>Criar/Atualizar Curso</button>
+        </form>
+      </section>
+      <section id="criar-aula" data-role="admin">
+        <div class="render"></div>
+        <form>
+          <label for="course-slug-aula">Curso</label>
+          <input type="text" name="courseSlug" id="course-slug-aula" />
+          <label for="slug-aula">Slug</label>
+          <input type="text" name="slug" id="slug-aula" />
+          <label for="title-aula">Título</label>
+          <input type="text" name="title" id="title-aula" />
+          <label for="description-aula">Descrição</label>
+          <input type="text" name="description" id="description-aula" />
+          <label for="seconds-aula">Segundos</label>
+          <input type="number" name="seconds" id="seconds-aula" />
+          <label for="order-aula">Segundos</label>
+          <input type="number" name="order" id="order-aula" />
+          <label for="free-aula">Gratuita</label>
+          <input type="number" name="free" id="free-aula" value="0" />
+          <label for="file">Vídeo</label>
+          <input type="file" name="file" id="file" />
+          <label for="video-aula">Caminho do Vídeo</label>
+          <input type="text" name="video" id="video-aula" />
+          <button>Criar/Atualizar Aula</button>
+        </form>
+      </section>
+      <section id="cursos" data-role="user"></section>
+      <section id="curso" data-role="user"></section>
+      <section id="aula" data-role="user"></section>
+      <section id="certificados" data-role="user"></section>
+      <section id="usuarios" data-role="admin">
+        <form>
+          <label for="search">Buscar:</label>
+          <input type="text" name="search" id="search" />
+          <label for="page">Página</label>
+          <input type="number" name="page" id="page" value="1" />
+          <button class="hidden">Buscar</button>
+        </form>
+      </section>
+    </div>
   </body>
 </html>
