@@ -315,5 +315,48 @@
         </form>
       </section>
     </div>
+    <script>
+      const routes = document.querySelectorAll("section[data-role]");
+      const navs = document.querySelectorAll("nav[data-role]");
+
+      function handleUserNav(user) {
+        for(const nav of navs) {
+          if(nav.dataset.role === user) {
+            nav.classList.add("active");
+          } else {
+            nav.classList.remove("active");
+          }
+        }
+      }
+
+      let user;
+      async function getUser() {
+        user = "public";
+        try {
+          const response = await fetch("/auth/session");
+          const body = await response.json();
+          if(!response.ok) throw new Error();
+          return user;
+        } catch(error) {
+          return user;
+        } finally {
+          handleUserNav(user);
+        }
+      }
+
+      async function router() {
+        if(user === undefined) user = await getUser();
+        console.log(user);
+        routes.forEach(item => item.classList.remove("active"));
+        const route = location.hash.replace("#/", "").split("/").shift();
+        const section = document.getElementById(route);
+        if(section) {
+          if(user !== section.dataset.role) location.hash = "/login";
+          section.classList.add("active");
+        }
+      }
+      window.addEventListener("hashchange", router);
+      window.addEventListener("DOMContentLoaded", router);
+    </script>
   </body>
 </html>
