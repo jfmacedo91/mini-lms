@@ -14,21 +14,21 @@
         font-family: "Lora", serif;
         font-weight: 400;
         box-sizing: border-box;
-        /* corner-shape: squircle; */
+        corner-shape: squircle;
       }
       html {
-        --black: #000000;
-        --gray-1: #171717;
-        --gray-2: #222222;
-        --gray-3: #333333;
-        --gray-4: #777777;
-        --gray-5: #AAAAAA;
-        --gray-6: #CCCCCC;
-        --gray-7: #EEEEEE;
-        --white: #FFFFFF;
-        --gradient-1: linear-gradient(to bottom, rgba(255, 255, 255, 0.050), rgba(255, 255, 255, 0.025));
-        --gradient-2: linear-gradient(to bottom, rgba(255, 255, 255, 0.100), rgba(255, 255, 255, 0.050));
-        --gradient-3: linear-gradient(to bottom, rgba(255, 255, 255, 0.150), rgba(255, 255, 255, 0.100));
+        --black: #0C0C09;
+        --gray-1: #1D1D16;
+        --gray-2: #2B2B22;
+        --gray-3: #5B5B4B;
+        --gray-4: #7C7C67;
+        --gray-5: #ABAB9C;
+        --gray-6: #E8E8E3;
+        --gray-7: #F4F4F0;
+        --white: #FBFBF9;
+        --gradient-1: linear-gradient(to bottom, #FBFBF90D, #FBFBF906);
+        --gradient-2: linear-gradient(to bottom, #FBFBF91A, #FBFBF90D);
+        --gradient-3: linear-gradient(to bottom, #FBFBF926, #FBFBF91A);
       }
       body {
         font-size: 1.125rem;
@@ -191,6 +191,19 @@
       [data-role].active {
         display: block;
       }
+      .ok, .fail {
+        grid-column: 2;
+        width: max-content;
+        padding: 0.5rem;
+        animation: slideIn .3s ease-out forwards;
+        border-radius: 6rem;
+        color: #FFCA16;
+        background-color: #211100;
+      }
+      .ok {
+        color: #3DD78C;
+        background-color: #0C281C;
+      }
     </style>
   </head>
   <body>
@@ -336,6 +349,7 @@
           const response = await fetch("/auth/session");
           const body = await response.json();
           if(!response.ok) throw new Error();
+          user = body.role;
           return user;
         } catch(error) {
           return user;
@@ -357,6 +371,49 @@
       }
       window.addEventListener("hashchange", router);
       window.addEventListener("DOMContentLoaded", router);
+
+      async function sendForm(method, url, id, callback) {
+        const form = document.querySelector(`#${id} form`);
+        form?.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const data = new FormData(form);
+          let response;
+          let body = {};
+          const badge = document.createElement("div");
+          try {
+            response = await fetch(url, {
+              method,
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(Object.fromEntries(data))
+            });
+            body = await response.json();
+            if(!response.ok) throw new Error();
+            if(typeof callback === "function") callback(response, body);
+            badge.innerText = `${ response.status }`
+            badge.classList.add("ok");
+          } catch (error) {
+            badge.innerText = `${ response.status } - ${ body?.title }`
+            badge.classList.add("fail");
+          } finally  {
+            form.append(badge);
+            setTimeout(() => {
+              badge?.remove();
+            }, 1500);
+          }
+        });
+      };
+
+      sendForm("POST", "/auth/login", "login", async () => {
+        user = await getUser();
+        if(user === "user") location.hash = "/cursos";
+        if(user === "admin") location.hash = "/criar-curso";
+      });
+
+      sendForm("POST", "/auth/user", "criar-conta", () => {
+        location.hash = "/login";
+      });
     </script>
   </body>
 </html>
