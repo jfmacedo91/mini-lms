@@ -204,6 +204,44 @@
         color: #3DD78C;
         background-color: #0C281C;
       }
+      #curso {
+        margin-top: 2rem;
+      }
+      .curso-item {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding: 0 1rem 2rem 1rem;
+        text-align: center;
+        text-wrap: balance;
+        border-bottom: 2px dashed var(--gray-1);
+      }
+      .curso-item > *:not(.btn) {
+        padding: 0.5rem;
+      }
+      .curso-item span:first-of-type {
+        border-right: 1px solid var(--gray-1);
+        justify-self: end;
+      }
+      .curso-item span:last-of-type {
+        border-left: 1px solid var(--gray-1);
+        justify-self: start;
+      }
+      .curso-item h2,
+      .curso-item p,
+      .curso-item .btn {
+        grid-column: 1/-1;
+      }
+      .curso-item .btn {
+        justify-self: center;
+        margin-top: 1rem;
+      }
+      .curso-item h2 {
+        margin: 1rem 0 0 0;
+      }
+      .curso-item p,
+      .curso-item span {
+        color: var(--gray-5);
+      }
     </style>
   </head>
   <body>
@@ -314,10 +352,18 @@
           <button>Criar/Atualizar Aula</button>
         </form>
       </section>
-      <section id="cursos" data-role="user"></section>
-      <section id="curso" data-role="user"></section>
-      <section id="aula" data-role="user"></section>
-      <section id="certificados" data-role="user"></section>
+      <section id="cursos" data-role="user">
+        <div class="render"></div>
+      </section>
+      <section id="curso" data-role="user">
+        <div class="render"></div>
+      </section>
+      <section id="aula" data-role="user">
+        <div class="render"></div>
+      </section>
+      <section id="certificados" data-role="user">
+        <div class="render"></div>
+      </section>
       <section id="usuarios" data-role="admin">
         <form>
           <label for="search">Buscar:</label>
@@ -329,6 +375,13 @@
       </section>
     </div>
     <script>
+      const scape = (value) => String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt")
+        .replaceAll("'", "#39;")
+        .replaceAll('"', "&quot;");
+
       const routes = document.querySelectorAll("section[data-role]");
       const navs = document.querySelectorAll("nav[data-role]");
 
@@ -338,9 +391,9 @@
             nav.classList.add("active");
           } else {
             nav.classList.remove("active");
-          }
-        }
-      }
+          };
+        };
+      };
 
       let user;
       async function getUser() {
@@ -355,22 +408,53 @@
           return user;
         } finally {
           handleUserNav(user);
-        }
-      }
+        };
+      };
 
       async function router() {
         if(user === undefined) user = await getUser();
-        console.log(user);
         routes.forEach(item => item.classList.remove("active"));
         const route = location.hash.replace("#/", "").split("/").shift();
         const section = document.getElementById(route);
         if(section) {
           if(user !== section.dataset.role) location.hash = "/login";
           section.classList.add("active");
+          if(typeof data[route] === "function") data[route](section);
         }
-      }
+      };
       window.addEventListener("hashchange", router);
       window.addEventListener("DOMContentLoaded", router);
+
+      async function getData(url, callback) {
+        const response = await fetch(url);
+        const body = await response.json();
+        callback(body, response);
+      };
+
+      const data = {
+        cursos: (section) => {
+          getData("/lms/courses", (courses) => {
+            const render = section.querySelector(".render");
+            render.innerHTML = "";
+            let html = "";
+            for (const course of courses) {
+              html += /*html*/`
+                <div class="curso-item">
+                  <h2>${ scape(course.title) }</h2>
+                  <p>${ scape(course.description) }</p>
+                  <span>Aulas: ${ scape(course.lessons) }</span>
+                  <span>Horas: ${ scape(course.hours) }</span>
+                  <a href="#/curso/${ scape(course.slug) }" class="btn">${ scape(course.title) }</a>
+                </div>
+              `;
+            };
+            render.innerHTML = html;
+          });
+        },
+        certificados: (section) => {
+          console.log("RENDERIZAR CERTIFICADOS");
+        }
+      };
 
       async function sendForm(method, url, id, callback) {
         const form = document.querySelector(`#${id} form`);
