@@ -242,6 +242,47 @@
       .curso-item span {
         color: var(--gray-5);
       }
+      .curso-aulas {
+        list-style: none;
+        margin-top: 1rem;
+      }
+      .curso-aulas li a {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 0.75rem;
+        text-decoration: none;
+        color: var(--gray-6);
+      }
+      .curso-aulas li:nth-of-type(even) a {
+        background-color: #111111;
+      }
+      .curso-aulas li a:hover {
+        background-color: var(--gray-2);
+      }
+      .curso-aulas li a span {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-family: monospace;
+        font-size: 0.75rem;
+        color: var(--gray-4);
+      }
+      .curso-aulas .status {
+        display: block;
+        width: 8px;
+        height: 8px;
+        border: 1px solid var(--gray-3);
+        border-radius: 50%;
+        corner-shape: round;
+      }
+      .curso-aulas .status.completed {
+        background: linear-gradient(rgb(172, 239, 117), rgb(23, 232, 128));
+      }
+      #reset-curso button {
+        margin: 1rem auto;
+      }
     </style>
   </head>
   <body>
@@ -382,6 +423,12 @@
         .replaceAll("'", "#39;")
         .replaceAll('"', "&quot;");
 
+      const secToMin = (seconds) => {
+        const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
+        const ss = String(Math.floor(seconds % 60)).padStart(2, "0");
+        return `${mm}:${ss}`;
+      };
+
       const routes = document.querySelectorAll("section[data-role]");
       const navs = document.querySelectorAll("nav[data-role]");
 
@@ -448,6 +495,40 @@
                 </div>
               `;
             };
+            render.innerHTML = html;
+          });
+        },
+        curso: (section) => {
+          const [_, course] = location.hash.replace("#", "").split("/").filter(Boolean);
+          if(!course) return;
+          getData(`/lms/course/${ course }`, (data) => {
+            const { course, lessons, completed } = data;
+            const render = section.querySelector(".render");
+            render.innerHTML = "";
+            let html = /*html*/`
+              <div class="curso-item">
+                <h2>${ scape(course.title) }</h2>
+                <p>${ scape(course.description) }</p>
+                <span>Aulas: ${ scape(course.lessons) }</span>
+                <span>Horas: ${ scape(course.hours) }</span>
+              </div>
+            `;
+            html += /*html*/`<ul class="curso-aulas">`
+            for(const lesson of lessons) {
+              const isCompleted = completed.some((item) => item.lesson_id == lesson.id);
+              html += /*html*/`
+                <li>
+                  <a href="#/aula/${ scape(course.slug) }/${ scape(lesson.slug) }">
+                    ${ scape(lesson.title) }
+                    <span>
+                      <span>${ secToMin(lesson.seconds) }</span>
+                      <span class="status ${isCompleted ? 'completed' : ''}"></span>  
+                    </span>
+                  </a>
+                </li>
+              `
+            };
+            html += /*html*/`</ul>`
             render.innerHTML = html;
           });
         },
