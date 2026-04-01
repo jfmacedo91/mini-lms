@@ -478,6 +478,22 @@
         callback(body, response);
       };
 
+      function renderResetCourseButton(courseId) {
+        setTimeout(() => {
+          sendForm("DELETE", "/lms/course/reset", "reset-curso", () => {
+            location.reload();
+          });
+        }, 50);
+        return /*html*/`
+          <div id="reset-curso">
+            <form>
+              <input name="courseId" type="hidden" value="${ scape(courseId) }" />
+              <button>Resetar</button>
+            </form>
+          </div>
+        `;
+      }
+
       const data = {
         cursos: (section) => {
           getData("/lms/courses", (courses) => {
@@ -528,7 +544,10 @@
                 </li>
               `
             };
-            html += /*html*/`</ul>`
+            html += /*html*/`
+              </ul>
+              ${ completed.length === 0 ? renderResetCourseButton(course.id) : ""}
+            `
             render.innerHTML = html;
           });
         },
