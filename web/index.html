@@ -283,6 +283,45 @@
       #reset-curso button {
         margin: 1rem auto;
       }
+      #aula h2 {
+        font-size: 1.5rem;
+        margin-bottom: 0px;
+      }
+      #breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: sans-serif;
+      }
+      #breadcrumb a {
+        font-family: sans-serif;
+        font-size: 0.75rem;
+        text-decoration: none;
+        color: var(--gray-4);
+      }
+      #video {
+        margin: 1rem auto;
+        border: 1px solid var(--gray-1);
+        border-radius: 12px;
+        aspect-ratio: 16/9;
+        overflow: hidden;
+      }
+      video {
+        max-width: 100%;
+        aspect-ratio: 16/9;
+      }
+      #aula-nav {
+        display: grid;
+        grid-template-columns: 100px 1fr 100px;
+        justify-items: center;
+      }
+      #aula-nav a,
+      #aula-nav button {
+        padding: 0.5rem;
+        min-width: 70px;
+        font-size: 0.75rem;
+        line-height: 1;
+      }
     </style>
   </head>
   <body>
@@ -494,6 +533,24 @@
         `;
       }
 
+      function renderCompleteLessonButton(courseId, lessonId) {
+        setTimeout(() => {
+          sendForm("POST", "/lms/lesson/complete", "completar", () => {
+            document.getElementById("completar").innerHTML = "<span></span>";
+          });
+        }, 50);
+        console.log(courseId, lessonId);
+        return /*html*/`
+          <div id="completar">
+            <form>
+              <input name="courseId" type="hidden" value="${ scape(courseId) }" />
+              <input name="lessonId" type="hidden" value="${ scape(lessonId) }" />
+              <button>Completar</button>
+            </form>
+          </div>
+        `;
+      }
+
       const data = {
         cursos: (section) => {
           getData("/lms/courses", (courses) => {
@@ -546,9 +603,36 @@
             };
             html += /*html*/`
               </ul>
-              ${ completed.length === 0 ? renderResetCourseButton(course.id) : ""}
+              ${ completed.length > 0 ? renderResetCourseButton(course.id) : ""}
             `
             render.innerHTML = html;
+          });
+        },
+        aula: (section) => {
+          const [_, curso, aula] = location.hash.replace("#", "").split("/").filter(Boolean);
+          if(!curso || ! aula) return;
+          getData(`/lms/lesson/${ curso }/${ aula }`, (lesson) => {
+            const render = section.querySelector(".render");
+            render.innerHTML = "";
+            let html = /*html*/`
+              <div>
+                <h2>${ scape(lesson.title) }</h2>
+                <div id="breadcrumb">
+                  <a href="#/cursos">cursos</a> >
+                  <a href="#/curso/${ curso }">${ curso }</a>
+                </div>
+                <div id="video">
+                  <video poster="" preload="metadata" src="/${ lesson.video }" controls></video>
+                </div>
+                <nav id="aula-nav">
+                  ${ lesson.prev ? `<a class="btn" href="${ scape(`#/aula/${ curso }/${ lesson.prev }`) }">Anterior</a>` : `<span></span>`}
+                  ${ lesson.completed ? `<span></span>` : renderCompleteLessonButton(lesson.course_id, lesson.id) }
+                  ${ lesson.next ? `<a class="btn" href="${ scape(`#/aula/${ curso }/${ lesson.next }`) }">Próxima</a>` : `<span></span>`}
+                </nav>
+              </div>
+            `;
+            render.innerHTML = html;
+            console.log(lesson);
           });
         },
         certificados: (section) => {
