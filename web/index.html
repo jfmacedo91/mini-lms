@@ -518,6 +518,8 @@
           if(user !== section.dataset.role) location.hash = "/login";
           section.classList.add("active");
           if(typeof data[route] === "function") data[route](section);
+        } else {
+          if(typeof data[route] === "function") data[route]();
         }
       };
       window.addEventListener("hashchange", router);
@@ -666,6 +668,22 @@
             html += "</ul>";
             render.innerHTML = html
           });
+        },
+        sair: async() => {
+          await fetch("/auth/logout", {
+            method: "DELETE"
+          });
+          user = "public";
+          location.hash = "/login";
+          handleUserNav(user);
+        },
+        resetar: () => {
+          const query = location.hash.split("=");
+          if(query[1]) {
+            console.log(query[1]);
+            const token = document.querySelector("input[name='token']");
+            if(token) token.value = query[1];
+          };
         }
       };
 
@@ -711,6 +729,10 @@
       sendForm("POST", "/auth/user", "criar-conta", () => {
         location.hash = "/login";
       });
+
+      sendForm("POST", "/auth/password/forgot", "recuperar");
+
+      sendForm("POST", "/auth/password/reset", "resetar");
     </script>
   </body>
 </html>

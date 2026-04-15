@@ -99,7 +99,7 @@ export class AuthApi extends Api {
       };
 
       const { token } = await this.session.resetToken({ user_id: user.id, ip: req.ip, ua: req.headers["user-agent"] ?? "" });
-      const resetLink = `${req.baseurl}/password/reset/?token=${ token }`;
+      const resetLink = `${req.baseurl}/#/resetar/?token=${ token }`;
       const emailContent = {
         to: user.email,
         subject: "Password Reset",
