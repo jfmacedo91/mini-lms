@@ -134,9 +134,14 @@ export class LmsApi extends Api {
       };
 
       const courseId = validate.number(req.body.courseId);
-      const writeResult = this.query.deleteLessonsCompleted(req.session.user_id, courseId);
-      if(writeResult.changes === 0) {
+      const writeResultLessons = this.query.deleteLessonsCompleted(req.session.user_id, courseId);
+      if(writeResultLessons.changes === 0) {
         throw new RouteError(400, "Erro ao resetar o curso!");
+      };
+
+      const writeResultCertificate = this.query.deleteCertificate(req.session.user_id, courseId);
+      if(writeResultCertificate.changes === 0) {
+        throw new RouteError(400, "Erro ao deletar o certificado!");
       };
 
       res.status(200).json({ ttile: "Curso resetado com sucesso!" });

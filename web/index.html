@@ -322,6 +322,18 @@
         font-size: 0.75rem;
         line-height: 1;
       }
+      #certificados ul {
+        list-style: none;
+        display: grid;
+        gap: 1.5rem;
+      }
+      #certificados ul li a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 1rem;
+      }
     </style>
   </head>
   <body>
@@ -636,7 +648,24 @@
           });
         },
         certificados: (section) => {
-          console.log("RENDERIZAR CERTIFICADOS");
+          getData("/lms/certificates", (certificates) => {
+            if(!Array.isArray(certificates)) return;
+            const render = section.querySelector(".render");
+            render.innerHTML = "";
+            let html = "<ul>";
+            for (const certificate of certificates) {
+              html += /*html*/`
+                <li>
+                  <a class="btn" target="_blank" href="/lms/certificate/${ certificate.id }">
+                    ${ scape(certificate.title) }
+                    <span>${ scape(certificate.completed.slice(0, 10).split("-").reverse().join("/")) }</span>
+                  </a>
+                </li>
+              `;
+            };
+            html += "</ul>";
+            render.innerHTML = html
+          });
         }
       };
 
