@@ -41,10 +41,15 @@ type CertificateFullType = {
 export class LmsQuery extends Query {
   insertCourse({ slug, title, description, lessons, hours }: CourseCreate) {
     return this.db.query(/*sql*/`
-      INSERT OR IGNORE INTO "courses"
+      INSERT INTO "courses"
         ("slug", "title", "description", "lessons", "hours")
       VALUES
-        (?, ?, ?, ?, ?);
+        (?, ?, ?, ?, ?)
+      ON CONFLICT ("slug") DO UPDATE SET
+        "title" = excluded."title",
+        "description" = excluded."description",
+        "lessons" = excluded."lessons",
+        "hours" = excluded."hours";
     `).run(slug, title, description, lessons, hours);
   };
   insertLesson({ courseSlug, slug, title, seconds, video, description, order, free }: LessonCreate) {

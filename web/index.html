@@ -134,6 +134,10 @@
         outline: none;
         border-color: var(--white);
       }
+      option {
+        font-family: sans-serif;
+        background-color: var(--gray-1);
+      }
       nav {
         margin-bottom: 2rem;
       }
@@ -171,6 +175,9 @@
       select {
         width: 100%;
         margin-bottom: 2px;
+      }
+      select.course {
+        margin-bottom: 1rem;
       }
       section, .render {
         animation: slideIn 300ms ease-out forwards;
@@ -684,6 +691,31 @@
             const token = document.querySelector("input[name='token']");
             if(token) token.value = query[1];
           };
+        },
+        ["criar-curso"]: async (section) => {
+          getData("/lms/courses", (courses) => {
+            section.name = "courses-select";
+            const render = section.querySelector(".render");
+            const form = section.querySelector("form");
+            render.innerHTML = "";
+            const select = document.createElement("select");
+            select.add(new Option("Selecionar Curso", null));
+            select.classList.add("course");
+            let index = 0;
+            for (const course of courses) {
+              select.add(new Option(course.title, index));
+              index++;
+            }
+            select.addEventListener("change", (event) => {
+              event.preventDefault();
+              const course = courses[select.value];
+              for (const key in course) {
+                const input = form.querySelector(`[name="${ key }"]`);
+                if(input) input.value = course[key];
+              }
+            });
+            render.append(select);
+          });
         }
       };
 
@@ -733,6 +765,8 @@
       sendForm("POST", "/auth/password/forgot", "recuperar");
 
       sendForm("POST", "/auth/password/reset", "resetar");
+
+      sendForm("POST", "/lms/course", "criar-curso");
     </script>
   </body>
 </html>
