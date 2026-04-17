@@ -54,10 +54,17 @@ export class LmsQuery extends Query {
   };
   insertLesson({ courseSlug, slug, title, seconds, video, description, order, free }: LessonCreate) {
     return this.db.query(/*sql*/`
-      INSERT OR IGNORE INTO "lessons"
+      INSERT INTO "lessons"
         ("course_id", "slug", "title", "seconds", "video", "description", "order", "free")
       VALUES
         ((SELECT "id" FROM "courses" WHERE "slug" = ?), ?, ?, ?, ?, ?, ?, ?);
+      ON CONFLICT ("course_id", "slug") DO UPDATE SET
+        "title" = excluded."title",
+        "description" = excluded."description",
+        "seconds" = excluded."seconds",
+        "video" = excluded."video";
+        "order" = excluded."order";
+        "free" = excluded."free";
     `).run(courseSlug, slug, title, seconds, video, description, order, free);
   };
   selectCourses() {
@@ -76,6 +83,13 @@ export class LmsQuery extends Query {
       WHERE "course_id" = (SELECT "id" FROM "courses" WHERE "slug" = ?)
       ORDER BY "order" ASC;
     `).all(courseSlug) as LessonType[];
+  };
+  selectAllLessons() {
+    return this.db.prepare(/*sql*/`
+      SELECT "l".*, "c"."slug" AS "courseSlug" FROM "lessons" AS "l"
+      JOIN "courses" AS "c" ON "c"."id" = "l"."course_id"
+      ORDER BY "l"."course_id" ASC, "l"."order" ASC LIMIT 200
+    `).all();
   };
   selectLesson(courseSlug: string, lessonSlug: string) {
     return this.db.prepare(/*sql*/`

@@ -109,6 +109,13 @@ export class LmsApi extends Api {
 
       res.status(200).json({ course, lessons, completed });
     },
+    getLessons: (req, res) => {
+      const lessons = this.query.selectAllLessons();
+      if(lessons.length === 0) {
+        throw new RouteError(404, "Nenhuma aula encontrada!");
+      }
+      res.status(200).json(lessons);
+    },
     getLesson: (req, res) => {
       const { courseSlug, lessonSlug } = req.params;
       const lesson = this.query.selectLesson(courseSlug, lessonSlug);
@@ -178,7 +185,8 @@ export class LmsApi extends Api {
 
     this.router.get("/lms/courses", this.handlers.getCourses);
     this.router.get("/lms/course/:slug", this.handlers.getCourse, [this.auth.optional]);
-    this.router.get("/lms/lesson/:courseSlug/:lessonSlug", this.handlers.getLesson, [this.auth.optional]);
+    this.router.get("/lms/lessons", this.handlers.getLessons, [this.auth.optional]);
+    this.router.get("/lms/lesson/:courseSlug/:lessonSlug", this.handlers.getLesson, [this.auth.guard("admin")]);
     this.router.get("/lms/certificates", this.handlers.getCertificates, [this.auth.guard("user")]);
     this.router.get("/lms/certificate/:certificateId", this.handlers.getCertificate);
 

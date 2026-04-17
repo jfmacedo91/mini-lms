@@ -716,6 +716,31 @@
             });
             render.append(select);
           });
+        },
+        ["criar-aula"]: (section) => {
+          getData("/lms/lessons", (lessons) => {
+            const render = section.querySelector(".render");
+            const form = section.querySelector("form");
+            render.innerHTML = "";
+            const select = document.createElement("select");
+            select.name = "lessons-select";
+            select.add(new Option("Selecionar Aula", null));
+            select.classList.add("course");
+            let index = 0;
+            for (const lesson of lessons) {
+              select.add(new Option(`${ lesson.courseSlug } - ${ lesson.title }`, index));
+              index++;
+            }
+            select.addEventListener("change", (event) => {
+              event.preventDefault();
+              const lesson = lessons[select.value];
+              for (const key in lesson) {
+                const input = form.querySelector(`[name="${ key }"]`);
+                if(input) input.value = lesson[key];
+              }
+            });
+            render.append(select);
+          });
         }
       };
 
