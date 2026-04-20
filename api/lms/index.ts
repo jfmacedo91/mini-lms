@@ -186,7 +186,7 @@ export class LmsApi extends Api {
     this.router.get("/lms/courses", this.handlers.getCourses);
     this.router.get("/lms/course/:slug", this.handlers.getCourse, [this.auth.optional]);
     this.router.get("/lms/lessons", this.handlers.getLessons, [this.auth.optional]);
-    this.router.get("/lms/lesson/:courseSlug/:lessonSlug", this.handlers.getLesson, [this.auth.guard("admin")]);
+    this.router.get("/lms/lesson/:courseSlug/:lessonSlug", this.handlers.getLesson, [this.auth.optional]);
     this.router.get("/lms/certificates", this.handlers.getCertificates, [this.auth.guard("user")]);
     this.router.get("/lms/certificate/:certificateId", this.handlers.getCertificate);
 

@@ -57,13 +57,13 @@ export class LmsQuery extends Query {
       INSERT INTO "lessons"
         ("course_id", "slug", "title", "seconds", "video", "description", "order", "free")
       VALUES
-        ((SELECT "id" FROM "courses" WHERE "slug" = ?), ?, ?, ?, ?, ?, ?, ?);
+        ((SELECT "id" FROM "courses" WHERE "slug" = ?), ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT ("course_id", "slug") DO UPDATE SET
         "title" = excluded."title",
         "description" = excluded."description",
         "seconds" = excluded."seconds",
-        "video" = excluded."video";
-        "order" = excluded."order";
+        "video" = excluded."video",
+        "order" = excluded."order",
         "free" = excluded."free";
     `).run(courseSlug, slug, title, seconds, video, description, order, free);
   };
