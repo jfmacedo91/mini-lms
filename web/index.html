@@ -742,6 +742,11 @@
             });
             render.append(select);
           });
+        },
+        usuarios: (section) => {
+          getData("/auth/users/search", (users, response) => {
+            console.log(users);
+          });
         }
       };
 

@@ -2,6 +2,29 @@ console.clear();
 
 const base = "http://localhost:3000";
 
+const users = [
+  { name: 'Henrique Barros', email: 'henrique.barros@exemplo.com' },
+  { name: 'Carlos Souza', email: 'carlos_souza@exemplo.com' },
+  { name: 'Márcia Martins', email: 'marcia_martins73@exemplo.com' },
+  { name: 'Maria Júlia Franco', email: 'mariajulia_franco23@exemplo.com' },
+  { name: 'Maitê Reis', email: 'maite.reis@exemplo.com' },
+  { name: 'Maria Franco', email: 'maria_franco@exemplo.com' },
+  { name: 'Alexandre Batista', email: 'alexandre.batista36@exemplo.com' },
+  { name: 'Eduarda Carvalho', email: 'eduarda.carvalho52@exemplo.com' },
+  { name: 'Ricardo Carvalho', email: 'ricardo.carvalho78@exemplo.com' },
+  { name: 'Ana Júlia Reis', email: 'anajulia_reis81@exemplo.com' },
+  { name: 'Rebeca Martins', email: 'rebeca.martins29@exemplo.com' },
+  { name: 'Maria Helena Martins', email: 'mariahelena_martins@exemplo.com' },
+  { name: 'Mércia Pereira', email: 'mercia_pereira@exemplo.com' },
+  { name: 'João Pedro Barros', email: 'joaopedro.barros38@exemplo.com' },
+  { name: 'Deneval Reis', email: 'deneval.reis@exemplo.com' },
+  { name: 'Pablo Xavier', email: 'pablo.xavier@exemplo.com' },
+  { name: 'Nataniel Silva', email: 'nataniel_silva@exemplo.com' },
+  { name: 'Yango Xavier', email: 'yango.xavier37@exemplo.com' },
+  { name: 'Eduardo Batista', email: 'eduardo.batista91@exemplo.com' },
+  { name: 'Emanuel Santos', email: 'emanuel.santos66@exemplo.com' },
+];
+
 const functions = {
 	async postCourse() {
 		const response = await fetch(base + "/lms/course", {
@@ -55,19 +78,13 @@ const functions = {
 		const body = await response.json();
 		console.log(body);
 	},
-	async postUser() {
+	async postUser(user) {
 		const response = await fetch(base + "/auth/user", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
 			},
-			body: JSON.stringify({
-				name: "Jean Fernandes de Macedo",
-				username: "jeanmacedo",
-				email: "jean@email.com",
-				role: "admin",
-				password: "123456"
-			})
+			body: JSON.stringify(user)
 		});
 		const body = await response.json();
 		console.table(body);
@@ -116,5 +133,18 @@ const functions = {
 		const body = await response.json();
 	}
 };
+
+// for(const user of users) {
+// 	const [username, _] = user.email.split("@");
+// 	const obj = {
+// 		name: user.name,
+// 		username,
+// 		email: user.email,
+// 		role: "user",
+// 		password: "Az.12345678"
+// 	};
+// 	await functions.postUser(obj);
+// 	await new Promise(resolve => setTimeout(resolve, 1500));
+// }
 
 functions[process.argv[2]]();

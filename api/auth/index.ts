@@ -141,6 +141,10 @@ export class AuthApi extends Api {
       res.setHeader("Cache-Control", "private, no-store");
       res.setHeader("Vary", "Cookie");
       res.status(204).json({ title: "Logout!" })
+    },
+    searchUsers: (req, res) => {
+      const result = this.query.selectUsers("email", 10, 1);
+      res.status(200).json(result);
     }
   } satisfies Api["handlers"];
   tables(): void {
@@ -155,6 +159,7 @@ export class AuthApi extends Api {
     this.router.put("/auth/password/update", this.handlers.passwordUpdate, [this.auth.guard("user")]);
 
     this.router.get("/auth/session", this.handlers.getSession, [this.auth.guard("user")]);
+    this.router.get("/auth/users/search", this.handlers.searchUsers, [this.auth.guard("admin")]);
 
     this.router.delete("/auth/logout", this.handlers.deleteSession)
   };

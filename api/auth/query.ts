@@ -111,4 +111,15 @@ export class AuthQuery extends Query {
       DELETE FROM "resets" WHERE "user_id" = ?;
     `).run(user_id);
   };
+  selectUsers(search: string="", limit: number=10, page: number=1) {
+    const word = `%${ search.trim() }%`;
+    const safeLimit = limit < 100 ? limit : 100;
+    const offset = page * safeLimit - 10;
+    return this.db.query(/*sql*/`
+      SELECT "id", "name", "email", "created" FROM "users"
+      WHERE "name" LIKE ? OR "email" LIKE ?
+      ORDER BY "created" DESC
+      LIMIT ? OFFSET ?;
+    `).all(word, word, safeLimit, offset);
+  };
 };
