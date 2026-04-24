@@ -143,7 +143,18 @@ export class AuthApi extends Api {
       res.status(204).json({ title: "Logout!" })
     },
     searchUsers: (req, res) => {
-      const result = this.query.selectUsers("email", 10, 1);
+      const { search, page } = {
+        search: validate.optional.string(req.query.get("search")),
+        page: validate.optional.number(req.query.get("page"))
+      }
+      const result = this.query.selectUsers(search, 5, page);
+      if(result.length === 0) {
+        res.setHeader("X-Total-Count", "0");
+        res.status(200).json([]);
+        return;
+      }
+      const total = result[0].total;
+      res.setHeader("X-Total-Count", String(total));
       res.status(200).json(result);
     }
   } satisfies Api["handlers"];

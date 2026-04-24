@@ -747,6 +747,15 @@
           getData("/auth/users/search", (users, response) => {
             console.log(users);
           });
+          const form = document.querySelector("#usuarios form");
+          form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const data = new FormData(form);
+            getData(`/auth/users/search?search=${data.get("search")}&page=${data.get("page")}`, (users, response) => {
+              console.log(response.headers.get("X-Total-Count"));
+              console.log(users);
+            });
+          });
         }
       };
 
