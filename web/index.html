@@ -341,6 +341,32 @@
         width: 100%;
         padding: 1rem;
       }
+      #usuarios ul {
+        margin-top: 1rem;
+        list-style: none;
+      }
+      #usuarios li {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 1rem;
+        padding: 0.5rem 0;
+        font-size: 0.75rem;
+        border-bottom: 2px dashed var(--gray-1);
+        color: var(--gray-5);
+      }
+      .hidden {
+        display: none;
+      }
+      #pages {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+      #pages button {
+        min-width: max-content;
+        padding: 0.25rem 0.75rem;
+      }
     </style>
   </head>
   <body>
@@ -471,6 +497,7 @@
           <input type="number" name="page" id="page" value="1" />
           <button class="hidden">Buscar</button>
         </form>
+        <div class="render"></div>
       </section>
     </div>
     <script>
@@ -744,21 +771,56 @@
           });
         },
         usuarios: (section) => {
+          const render = section.querySelector(".render");
           getData("/auth/users/search", (users, response) => {
-            console.log(users);
+            const total = Number(response.headers.get("X-Total-Count"));
+            renderUsers(users, total, render);
           });
           const form = document.querySelector("#usuarios form");
           form.addEventListener("submit", (event) => {
             event.preventDefault();
             const data = new FormData(form);
             getData(`/auth/users/search?search=${data.get("search")}&page=${data.get("page")}`, (users, response) => {
-              console.log(response.headers.get("X-Total-Count"));
-              console.log(users);
+              const total = Number(response.headers.get("X-Total-Count"));
+              renderUsers(users, total, render);
             });
           });
         }
       };
 
+      function renderUsers(users, total, render) {
+        render.innerHTML = "";
+        let html = "<ul>";
+        const pages = document.createElement("nav");
+        pages.id = "pages";
+        const form = document.querySelector("#usuarios form");
+        const page = document.getElementById("page");
+        const totalPages = Math.ceil(total / 5);
+        if(totalPages > 1) {
+          for (let index = 1; index <= totalPages; index++) {
+            const button = document.createElement("button");
+            button.innerText = index;
+            button.addEventListener("click", (event) => {
+              page.value = index;
+              form.requestSubmit();
+            });
+            pages.append(button);
+          }
+        }
+        for (const user of users) {
+          html += /*html*/`
+            <li>
+              <span>${ scape(user.name) }</span>
+              <span>${ scape(user.email) }</span>
+            </li>
+          `;
+        }
+        html += "</ul>";
+        render.innerHTML = html;
+        render.append(pages);
+      };
+
+      // FORMULÁRIOS
       async function sendForm(method, url, id, callback) {
         const form = document.querySelector(`#${id} form`);
         form?.addEventListener("submit", async (event) => {
